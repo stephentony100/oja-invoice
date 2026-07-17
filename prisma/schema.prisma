@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+model Seller {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String   @unique
+  createdAt DateTime @default(now())
+
+  invoices       Invoice[]
+  priceListItems PriceListItem[]
+}
+
+model Invoice {
+  id                 String        @id @default(cuid())
+  sellerId           String
+  rawInputText       String
+  total              Int
+  status             InvoiceStatus @default(PENDING)
+  monnifyPaymentLink String?
+  monnifyReference   String?       @unique
+  createdAt          DateTime      @default(now())
+  paidAt             DateTime?
+
+  seller    Seller     @relation(fields: [sellerId], references: [id])
+  lineItems LineItem[]
+}
+
+model LineItem {
+  id        String  @id @default(cuid())
+  invoiceId String
+  name      String
+  quantity  Float
+  unit      String?
+  unitPrice Int?
+  lineTotal Int?
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+}
+
+// Stretch goal: remember a seller's per-item prices to speed up future parsing.
+// Not used yet.
+model PriceListItem {
+  id        String  @id @default(cuid())
+  sellerId  String
+  itemName  String
+  unitPrice Int
+  unit      String?
+
+  seller Seller @relation(fields: [sellerId], references: [id])
+
+  @@unique([sellerId, itemName])
+}

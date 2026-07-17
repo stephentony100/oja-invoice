@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Oja Invoice
 
-## Getting Started
+"Stripe for WhatsApp businesses" — a seller types an order in a chat-style
+bubble, AI parses it into an editable invoice, a Monnify payment link gets
+shared with the buyer, and payment is confirmed via webhook. Built for the
+APIConf Lagos x Monnify Developer Challenge.
 
-First, run the development server:
+See [AGENTS.md](./AGENTS.md) for the full product one-liner, stack, data
+model, out-of-scope list, and current build phase.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Setup
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. Install dependencies:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+   ```bash
+   pnpm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Copy the env template and fill in the keys:
 
-## Learn More
+   ```bash
+   cp .env.example .env
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+   Keys needed:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   | Key | Where to get it |
+   | --- | --- |
+   | `DATABASE_URL` | Already set to `file:./dev.db` (local SQLite), no action needed |
+   | `MONNIFY_API_KEY` | Monnify merchant dashboard, switched to sandbox/test mode |
+   | `MONNIFY_SECRET_KEY` | Same Monnify dashboard, sandbox/test mode |
+   | `MONNIFY_CONTRACT_CODE` | Same Monnify dashboard, sandbox/test mode |
+   | `MONNIFY_BASE_URL` | Defaults to Monnify's sandbox API base URL, no action needed for local dev |
+   | `ANTHROPIC_API_KEY` | Anthropic Console: https://console.anthropic.com/settings/keys |
+   | `NEXT_PUBLIC_APP_URL` | Defaults to `http://localhost:3000` locally; update once deployed (see note below) |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. Run the initial database migration (creates the SQLite file and Prisma
+   client):
 
-## Deploy on Vercel
+   ```bash
+   pnpm prisma migrate dev
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. Start the dev server:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   ```bash
+   pnpm dev
+   ```
+
+   App runs at http://localhost:3000.
+
+## Deploying early matters
+
+Monnify webhooks need to reach a public URL to confirm payments — they
+can't call back to `localhost`. Deploy to Vercel early in the build (not
+just at the end) and keep `NEXT_PUBLIC_APP_URL` pointed at that deployment,
+so the payment/webhook flow can actually be tested end-to-end well before
+the deadline.
