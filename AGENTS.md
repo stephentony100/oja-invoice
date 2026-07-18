@@ -63,6 +63,20 @@ native WhatsApp integration noted as post-hackathon roadmap.
 4. Dashboard + visual polish + empty/error states
 5. Testing, demo video, README, submission
 
+## Notes for later phases
+
+- Payment links have no fixed expiry from the seller's perspective — an
+  invoice stays Pending until paid, full stop, no overdue state anywhere in
+  this product.
+- However, Monnify's own payment links DO expire on Monnify's side
+  (observed ~40 min in sandbox testing). This means in Phase 3, "Copy
+  link" cannot assume the stored monnifyPaymentLink is always still valid —
+  if a seller taps Copy link on an older Pending invoice, check whether the
+  link has expired and silently regenerate a fresh one via Monnify's API if
+  so, rather than surfacing Monnify's expiry mechanics to the seller. The
+  seller should never see the word "expired" — this stays invisible
+  plumbing.
+
 ---
 
 When starting a new session mid-build, state which phase is in progress and

@@ -1,26 +1,43 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #0e1526;
+  --surface: #17213b;
+  --accent: #f2b33d;
+  --accent-ink: #231703;
+  --bg: #fbf7ee;
+  --text: #131a2b;
+  --muted: #5f6678;
+  --line: #ebe4d4;
+  --paid: #1c8a5b;
+  --paid-bg: #dbf1e6;
+  --pending: #a9720e;
+  --pending-bg: #f7e9c9;
+  --over: #c0392b;
+  --over-bg: #f6ded9;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-ink: var(--ink);
+  --color-surface: var(--surface);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-bg: var(--bg);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-paid: var(--paid);
+  --color-paid-bg: var(--paid-bg);
+  --color-pending: var(--pending);
+  --color-pending-bg: var(--pending-bg);
+  --color-over: var(--over);
+  --color-over-bg: var(--over-bg);
+  --font-display: var(--font-space-grotesk), sans-serif;
+  --font-body: var(--font-plus-jakarta), sans-serif;
+  --font-mono: var(--font-space-mono), monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
 }

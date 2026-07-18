@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 enum InvoiceStatus {
@@ -34,6 +34,7 @@ model Invoice {
   status             InvoiceStatus @default(PENDING)
   monnifyPaymentLink String?
   monnifyReference   String?       @unique
+  monnifyLinkGeneratedAt DateTime?
   createdAt          DateTime      @default(now())
   paidAt             DateTime?
 
