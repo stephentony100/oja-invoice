@@ -32,10 +32,15 @@ export async function shareOrDownloadFile(
     try {
       await navigator.share({ files: [file], title: options.title });
       return;
-    } catch {
-      // Share sheet was cancelled — don't fall back to a download the user
-      // didn't ask for.
-      return;
+    } catch (err) {
+      // AbortError means the user explicitly dismissed the share sheet —
+      // respect that and don't force a download they didn't ask for.
+      // Anything else (e.g. lost transient user-activation after the async
+      // PNG render, a permission failure, whatever) must still fall back to
+      // a direct download, or the button silently does nothing.
+      if (err instanceof Error && err.name === "AbortError") {
+        return;
+      }
     }
   }
   downloadFile(file);

@@ -62,6 +62,24 @@ export async function createPaymentLink(
   assertMonnifyEnv();
   const accessToken = await getAccessToken();
 
+  const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL}/paid/${params.invoiceId}`;
+  const initBody = {
+    amount: params.amountNaira,
+    customerName: params.customerName,
+    customerEmail: params.customerEmail,
+    paymentReference: params.paymentReference,
+    paymentDescription: params.paymentDescription,
+    currencyCode: "NGN",
+    contractCode: MONNIFY_CONTRACT_CODE,
+    redirectUrl,
+    paymentMethods: ["CARD", "ACCOUNT_TRANSFER"],
+  };
+
+  console.log(
+    "[monnify] init-transaction request body:",
+    JSON.stringify(initBody, null, 2)
+  );
+
   const initRes = await fetch(
     `${MONNIFY_BASE_URL}/api/v1/merchant/transactions/init-transaction`,
     {
@@ -70,21 +88,15 @@ export async function createPaymentLink(
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        amount: params.amountNaira,
-        customerName: params.customerName,
-        customerEmail: params.customerEmail,
-        paymentReference: params.paymentReference,
-        paymentDescription: params.paymentDescription,
-        currencyCode: "NGN",
-        contractCode: MONNIFY_CONTRACT_CODE,
-        redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/paid/${params.invoiceId}`,
-        paymentMethods: ["CARD", "ACCOUNT_TRANSFER"],
-      }),
+      body: JSON.stringify(initBody),
     }
   );
 
   const initData = await initRes.json();
+  console.log(
+    "[monnify] init-transaction response:",
+    JSON.stringify(initData, null, 2)
+  );
 
   if (!initRes.ok || initData?.requestSuccessful !== true || !initData?.responseBody?.checkoutUrl) {
     throw new Error(
