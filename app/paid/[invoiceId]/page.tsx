@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { ReceiptScreen } from "@/components/receipt-screen";
+import { PaidScreen } from "@/components/paid-screen";
 
 export const dynamic = "force-dynamic";
 
-export default async function ReceiptPage({
+export default async function PaidPage({
   params,
 }: {
   params: Promise<{ invoiceId: string }>;
@@ -16,15 +16,16 @@ export default async function ReceiptPage({
     include: { lineItems: true },
   });
 
-  if (!invoice || invoice.status !== "PAID") {
+  if (!invoice) {
     notFound();
   }
 
   return (
-    <ReceiptScreen
+    <PaidScreen
       invoice={{
         id: invoice.id,
         total: invoice.total,
+        status: invoice.status,
         createdAt: invoice.createdAt.toISOString(),
         paidAt: invoice.paidAt ? invoice.paidAt.toISOString() : null,
         lineItems: invoice.lineItems.map((it) => ({

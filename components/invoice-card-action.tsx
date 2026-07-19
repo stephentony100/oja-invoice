@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { DocumentCard, type DocumentData } from "@/components/document-card";
+import { renderNodeToPngFile, shareOrDownloadFile } from "@/lib/document-export";
 
 export function CopyLinkAction({ invoiceId }: { invoiceId: string }) {
   const [state, setState] = useState<"idle" | "copying" | "copied" | "error">(
@@ -33,7 +35,7 @@ export function CopyLinkAction({ invoiceId }: { invoiceId: string }) {
         ? "Copied!"
         : state === "error"
           ? "Couldn't copy"
-          : "Copy link";
+          : "Copy payment link";
 
   return (
     <button
@@ -51,5 +53,53 @@ export function ViewReceiptAction({ invoiceId }: { invoiceId: string }) {
     <Link href={`/receipt/${invoiceId}`} className="text-[12.5px] font-bold text-paid">
       View receipt
     </Link>
+  );
+}
+
+// Secondary action on every chat card: Pending -> "Invoice" (status-free
+// document), Paid -> "Receipt" (PAID stamp + Settled pill). Renders the
+// exportable document off-screen so it never appears in the feed itself.
+export function DownloadDocumentAction({
+  invoice,
+  paid,
+}: {
+  invoice: DocumentData;
+  paid: boolean;
+}) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function handleClick() {
+    if (!cardRef.current || busy) return;
+    setBusy(true);
+    try {
+      const invoiceCode = invoice.id.slice(-6).toUpperCase();
+      const filename = paid
+        ? `kobo-receipt-${invoiceCode}.png`
+        : `kobo-invoice-${invoiceCode}.png`;
+      const file = await renderNodeToPngFile(cardRef.current, filename);
+      await shareOrDownloadFile(file, {
+        title: paid ? `Kobo receipt #${invoiceCode}` : `Kobo invoice #${invoiceCode}`,
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={busy}
+        className="inline-flex items-center gap-1.5 text-[12px] font-bold text-muted disabled:opacity-60"
+      >
+        <span className="block h-[11px] w-[10px] rounded-b-[3px] border-[1.5px] border-t-0 border-muted" />
+        {busy ? "Preparing…" : paid ? "Receipt" : "Invoice"}
+      </button>
+      <div className="pointer-events-none fixed left-[-9999px] top-0">
+        <DocumentCard ref={cardRef} invoice={invoice} paid={paid} />
+      </div>
+    </>
   );
 }

@@ -40,6 +40,7 @@ export async function POST(
       paymentDescription: `Invoice from Mama Nkechi Stores — ${naira(totalNaira)}`,
       customerName: "Kobo Buyer",
       customerEmail: "buyer@kobo.ng",
+      invoiceId: id,
     });
   } catch (error) {
     return Response.json(

@@ -1,6 +1,10 @@
 import { Fragment } from "react";
 import { ChatComposer } from "@/components/chat-composer";
-import { CopyLinkAction, ViewReceiptAction } from "@/components/invoice-card-action";
+import {
+  CopyLinkAction,
+  DownloadDocumentAction,
+  ViewReceiptAction,
+} from "@/components/invoice-card-action";
 import { formatTime, isDeliveryItem, naira, toNaira } from "@/lib/invoice";
 import { prisma } from "@/lib/prisma";
 import { getSeedSellerId } from "@/lib/seed-seller";
@@ -50,6 +54,7 @@ interface FeedInvoice {
   total: number;
   rawInputText: string;
   createdAt: Date;
+  paidAt: Date | null;
   lineItems: FeedLineItem[];
 }
 
@@ -109,8 +114,20 @@ function InvoiceCard({ invoice }: { invoice: FeedInvoice }) {
             {naira(toNaira(invoice.total))}
           </span>
         </div>
-        {invoice.status === "PENDING" && <CopyLinkAction invoiceId={invoice.id} />}
-        {invoice.status === "PAID" && <ViewReceiptAction invoiceId={invoice.id} />}
+        <div className="flex items-center gap-3.5">
+          <DownloadDocumentAction
+            invoice={{
+              id: invoice.id,
+              total: invoice.total,
+              createdAt: invoice.createdAt.toISOString(),
+              paidAt: invoice.paidAt ? invoice.paidAt.toISOString() : null,
+              lineItems: invoice.lineItems,
+            }}
+            paid={invoice.status === "PAID"}
+          />
+          {invoice.status === "PENDING" && <CopyLinkAction invoiceId={invoice.id} />}
+          {invoice.status === "PAID" && <ViewReceiptAction invoiceId={invoice.id} />}
+        </div>
       </div>
     </div>
   );

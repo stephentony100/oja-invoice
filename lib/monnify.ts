@@ -48,6 +48,7 @@ export interface CreatePaymentLinkParams {
   paymentDescription: string;
   customerName: string;
   customerEmail: string;
+  invoiceId: string;
 }
 
 export interface CreatePaymentLinkResult {
@@ -77,7 +78,7 @@ export async function createPaymentLink(
         paymentDescription: params.paymentDescription,
         currencyCode: "NGN",
         contractCode: MONNIFY_CONTRACT_CODE,
-        redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/paid`,
+        redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/paid/${params.invoiceId}`,
         paymentMethods: ["CARD", "ACCOUNT_TRANSFER"],
       }),
     }

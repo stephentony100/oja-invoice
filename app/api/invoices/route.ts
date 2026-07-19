@@ -35,36 +35,16 @@ export async function POST(request: Request) {
     0
   );
 
-  const paymentReference = `kobo-${crypto.randomUUID()}`;
-  let link;
-  try {
-    link = await createPaymentLink({
-      amountNaira: total,
-      paymentReference,
-      paymentDescription: `Invoice from Mama Nkechi Stores — ${naira(total)}`,
-      customerName: "Kobo Buyer",
-      customerEmail: "buyer@kobo.ng",
-    });
-  } catch (error) {
-    return Response.json(
-      {
-        error:
-          "Couldn't generate a payment link right now. Please try saving again.",
-        details: error instanceof Error ? error.message : String(error),
-      },
-      { status: 502 }
-    );
-  }
-
+  // Create the row first (no monnify fields yet) so we have a real invoice
+  // id to redirect the buyer back to after payment — Monnify's redirectUrl
+  // needs to point at /paid/{invoice.id}, which doesn't exist until the row
+  // does.
   const invoice = await prisma.invoice.create({
     data: {
       sellerId,
       rawInputText,
       total: toKobo(total),
       status: "PENDING",
-      monnifyPaymentLink: link.checkoutUrl,
-      monnifyReference: link.paymentReference,
-      monnifyLinkGeneratedAt: new Date(),
       lineItems: {
         create: items.map((it) => ({
           name: it.name,
@@ -78,5 +58,39 @@ export async function POST(request: Request) {
     include: { lineItems: true },
   });
 
-  return Response.json({ ok: true, invoice });
+  const paymentReference = `kobo-${crypto.randomUUID()}`;
+  let link;
+  try {
+    link = await createPaymentLink({
+      amountNaira: total,
+      paymentReference,
+      paymentDescription: `Invoice from Mama Nkechi Stores — ${naira(total)}`,
+      customerName: "Kobo Buyer",
+      customerEmail: "buyer@kobo.ng",
+      invoiceId: invoice.id,
+    });
+  } catch (error) {
+    // Keep the original contract: no DB row survives a Monnify failure.
+    await prisma.invoice.delete({ where: { id: invoice.id } });
+    return Response.json(
+      {
+        error:
+          "Couldn't generate a payment link right now. Please try saving again.",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 502 }
+    );
+  }
+
+  const updated = await prisma.invoice.update({
+    where: { id: invoice.id },
+    data: {
+      monnifyPaymentLink: link.checkoutUrl,
+      monnifyReference: link.paymentReference,
+      monnifyLinkGeneratedAt: new Date(),
+    },
+    include: { lineItems: true },
+  });
+
+  return Response.json({ ok: true, invoice: updated });
 }
