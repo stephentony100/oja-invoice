@@ -90,3 +90,13 @@ our /paid/[id] page. For the live stage demo: whoever is driving the
 buyer-side payment must remember to click that link — do not expect or
 wait for an automatic redirect. Worth rehearsing this exact click during
 demo prep so it isn't a surprise live on stage.
+
+KNOWN BUG, not yet fixed: the "Invoice" secondary button on chat feed
+cards passes automated Playwright click testing (fires a real download,
+correct unstamped document) but does NOT work when clicked manually in
+a real browser session — reported directly by the user. Likely a
+hydration-timing or click-interception issue that headless testing
+didn't catch. DO NOT rely on "Invoice" working during the live demo —
+use "View receipt" (Paid) or "Copy payment link" (Pending) instead,
+both of which are confirmed working. Revisit this after submission if
+time allows.

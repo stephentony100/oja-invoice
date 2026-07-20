@@ -18,15 +18,27 @@ export function ChatComposer() {
     setLoading(true);
     setError(null);
 
+    const FRIENDLY_FALLBACK = "Couldn't understand that order — try rephrasing it.";
+
     try {
       const res = await fetch("/api/parse-invoice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: trimmed }),
       });
-      const data = await res.json();
+
+      // Parse the body separately from the fetch itself — a malformed/non-
+      // JSON response (e.g. an upstream gateway error page) must still show
+      // the friendly fallback below, not a raw JSON-parse error string.
+      const data = await res.json().catch(() => null);
+
       if (!res.ok) {
-        throw new Error(data.error ?? "Couldn't parse that order.");
+        throw new Error(
+          typeof data?.error === "string" ? data.error : FRIENDLY_FALLBACK
+        );
+      }
+      if (!data?.items) {
+        throw new Error(FRIENDLY_FALLBACK);
       }
 
       const parsed = data as ParsedInvoice;
@@ -42,7 +54,9 @@ export function ChatComposer() {
       setText("");
       router.push("/review");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't parse that order.");
+      // The seller's typed input is intentionally left in place (no
+      // setText("")) so they can retry without retyping.
+      setError(e instanceof Error ? e.message : FRIENDLY_FALLBACK);
     } finally {
       setLoading(false);
     }

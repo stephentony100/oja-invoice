@@ -11,7 +11,7 @@ export interface ShareLineItem {
 export interface ShareInvoice {
   id: string;
   total: number;
-  monnifyPaymentLink: string;
+  monnifyPaymentLink: string | null;
   lineItems: ShareLineItem[];
 }
 

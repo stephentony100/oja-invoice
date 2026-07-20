@@ -59,9 +59,8 @@ export async function POST(request: Request) {
   });
 
   const paymentReference = `kobo-${crypto.randomUUID()}`;
-  let link;
   try {
-    link = await createPaymentLink({
+    const link = await createPaymentLink({
       amountNaira: total,
       paymentReference,
       paymentDescription: `Invoice from Mama Nkechi Stores — ${naira(total)}`,
@@ -69,28 +68,24 @@ export async function POST(request: Request) {
       customerEmail: "buyer@kobo.ng",
       invoiceId: invoice.id,
     });
-  } catch (error) {
-    // Keep the original contract: no DB row survives a Monnify failure.
-    await prisma.invoice.delete({ where: { id: invoice.id } });
-    return Response.json(
-      {
-        error:
-          "Couldn't generate a payment link right now. Please try saving again.",
-        details: error instanceof Error ? error.message : String(error),
+
+    const updated = await prisma.invoice.update({
+      where: { id: invoice.id },
+      data: {
+        monnifyPaymentLink: link.checkoutUrl,
+        monnifyReference: link.paymentReference,
+        monnifyLinkGeneratedAt: new Date(),
       },
-      { status: 502 }
-    );
+      include: { lineItems: true },
+    });
+
+    return Response.json({ ok: true, invoice: updated });
+  } catch (error) {
+    // The seller's work (the invoice + line items) is never lost, even if
+    // Monnify is unreachable — the row stays with monnifyPaymentLink null
+    // and the share screen offers a retry via /api/invoices/[id]/link,
+    // which already knows how to generate a link from scratch.
+    console.error("[invoices] payment link generation failed:", error);
+    return Response.json({ ok: true, invoice });
   }
-
-  const updated = await prisma.invoice.update({
-    where: { id: invoice.id },
-    data: {
-      monnifyPaymentLink: link.checkoutUrl,
-      monnifyReference: link.paymentReference,
-      monnifyLinkGeneratedAt: new Date(),
-    },
-    include: { lineItems: true },
-  });
-
-  return Response.json({ ok: true, invoice: updated });
 }
