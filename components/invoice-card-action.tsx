@@ -56,16 +56,14 @@ export function ViewReceiptAction({ invoiceId }: { invoiceId: string }) {
   );
 }
 
-// Secondary action on every chat card: Pending -> "Invoice" (status-free
-// document), Paid -> "Receipt" (PAID stamp + Settled pill). Renders the
-// exportable document off-screen so it never appears in the feed itself.
-export function DownloadDocumentAction({
-  invoice,
-  paid,
-}: {
-  invoice: DocumentData;
-  paid: boolean;
-}) {
+// Secondary action on every chat card, regardless of status: always
+// downloads the neutral, unstamped invoice document (never the PAID
+// stamp/Settled pill) — a seller may want to share a clean reference copy
+// of what was ordered without disclosing to a third party that it was
+// already paid for. The stamped document is only ever reachable via
+// "View receipt" on Paid cards. Renders the exportable document off-screen
+// so it never appears in the feed itself.
+export function DownloadDocumentAction({ invoice }: { invoice: DocumentData }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
 
@@ -74,13 +72,9 @@ export function DownloadDocumentAction({
     setBusy(true);
     try {
       const invoiceCode = invoice.id.slice(-6).toUpperCase();
-      const filename = paid
-        ? `kobo-receipt-${invoiceCode}.png`
-        : `kobo-invoice-${invoiceCode}.png`;
+      const filename = `kobo-invoice-${invoiceCode}.png`;
       const file = await renderNodeToPngFile(cardRef.current, filename);
-      await shareOrDownloadFile(file, {
-        title: paid ? `Kobo receipt #${invoiceCode}` : `Kobo invoice #${invoiceCode}`,
-      });
+      await shareOrDownloadFile(file, { title: `Kobo invoice #${invoiceCode}` });
     } finally {
       setBusy(false);
     }
@@ -92,13 +86,13 @@ export function DownloadDocumentAction({
         type="button"
         onClick={handleClick}
         disabled={busy}
-        className="inline-flex items-center gap-1.5 text-[12px] font-bold text-muted disabled:opacity-60"
+        className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1.5 text-[11.5px] font-bold text-muted transition-colors hover:border-muted/40 hover:bg-bg active:bg-line disabled:opacity-60"
       >
         <span className="block h-[11px] w-[10px] rounded-b-[3px] border-[1.5px] border-t-0 border-muted" />
-        {busy ? "Preparing…" : paid ? "Receipt" : "Invoice"}
+        {busy ? "Preparing…" : "Invoice"}
       </button>
       <div className="pointer-events-none fixed left-[-9999px] top-0">
-        <DocumentCard ref={cardRef} invoice={invoice} paid={paid} />
+        <DocumentCard ref={cardRef} invoice={invoice} paid={false} />
       </div>
     </>
   );

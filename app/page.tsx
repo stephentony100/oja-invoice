@@ -123,7 +123,6 @@ function InvoiceCard({ invoice }: { invoice: FeedInvoice }) {
               paidAt: invoice.paidAt ? invoice.paidAt.toISOString() : null,
               lineItems: invoice.lineItems,
             }}
-            paid={invoice.status === "PAID"}
           />
           {invoice.status === "PENDING" && <CopyLinkAction invoiceId={invoice.id} />}
           {invoice.status === "PAID" && <ViewReceiptAction invoiceId={invoice.id} />}

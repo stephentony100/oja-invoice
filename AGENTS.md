@@ -82,3 +82,11 @@ native WhatsApp integration noted as post-hackathon roadmap.
 When starting a new session mid-build, state which phase is in progress and
 treat that phase's definition of done as the target — don't build ahead
 into later phases' scope.
+
+Monnify sandbox checkout does NOT auto-redirect after a successful
+payment. It shows its own "Transaction Successful!" screen with a
+"← Back to merchant site" link that must be manually clicked to reach
+our /paid/[id] page. For the live stage demo: whoever is driving the
+buyer-side payment must remember to click that link — do not expect or
+wait for an automatic redirect. Worth rehearsing this exact click during
+demo prep so it isn't a surprise live on stage.
