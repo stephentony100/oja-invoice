@@ -20,9 +20,43 @@ const spaceMono = Space_Mono({
   weight: ["400", "700"],
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://oja-invoice.vercel.app";
+const TAGLINE = "Type it. Send it. Get paid.";
+const DESCRIPTION =
+  "Write an order the way you already text your customers. Nado turns it into a proper invoice, a Monnify payment link, and a receipt, with your sales tracked as you go.";
+
 export const metadata: Metadata = {
-  title: "Nado",
-  description: "Turn a chat message into a paid invoice.",
+  metadataBase: new URL(APP_URL),
+  title: {
+    default: `Nado — ${TAGLINE}`,
+    template: "%s · Nado",
+  },
+  description: DESCRIPTION,
+  keywords: [
+    "invoicing",
+    "WhatsApp business",
+    "payment links",
+    "Monnify",
+    "Nigerian small business",
+    "chat to invoice",
+  ],
+  openGraph: {
+    title: `Nado — ${TAGLINE}`,
+    description: DESCRIPTION,
+    url: APP_URL,
+    siteName: "Nado",
+    locale: "en_NG",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Nado — ${TAGLINE}`,
+    description: DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
