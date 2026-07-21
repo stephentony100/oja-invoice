@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { naira, toKobo } from "@/lib/invoice";
 import { createPaymentLink } from "@/lib/monnify";
+import { getSellerIdFromCookie } from "@/lib/seller-server";
 
 interface InvoiceItemInput {
   name: string;
@@ -11,14 +12,19 @@ interface InvoiceItemInput {
 }
 
 export async function POST(request: Request) {
+  // Seller identity is never trusted from the request body — a caller
+  // could otherwise attribute an invoice to any sellerId they know just by
+  // putting it in the JSON payload. Derived server-side from the session
+  // cookie instead.
+  const sellerId = await getSellerIdFromCookie();
+  if (!sellerId) {
+    return Response.json({ error: "Not signed in" }, { status: 401 });
+  }
+
   const body = await request.json().catch(() => null);
-  const sellerId = body?.sellerId;
   const rawInputText = body?.rawInputText;
   const items: InvoiceItemInput[] | undefined = body?.items;
 
-  if (typeof sellerId !== "string" || !sellerId) {
-    return Response.json({ error: "Missing sellerId" }, { status: 400 });
-  }
   if (typeof rawInputText !== "string" || !rawInputText.trim()) {
     return Response.json({ error: "Missing rawInputText" }, { status: 400 });
   }

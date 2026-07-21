@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { naira, toNaira } from "@/lib/invoice";
 import { createPaymentLink } from "@/lib/monnify";
+import { getSellerIdFromCookie } from "@/lib/seller-server";
 
 // Monnify sandbox payment links observed to expire after ~40 minutes (see
 // AGENTS.md notes-for-later-phases). Anything older than this is silently
@@ -15,12 +16,20 @@ export async function POST(
 ) {
   const { id } = await params;
 
+  const callerSellerId = await getSellerIdFromCookie();
+  if (!callerSellerId) {
+    return Response.json({ error: "Not signed in" }, { status: 401 });
+  }
+
   const invoice = await prisma.invoice.findUnique({
     where: { id },
     include: { seller: true },
   });
   if (!invoice) {
     return Response.json({ error: "Invoice not found" }, { status: 404 });
+  }
+  if (invoice.sellerId !== callerSellerId) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const isStale =

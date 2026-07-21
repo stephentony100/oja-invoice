@@ -99,8 +99,10 @@ export default function ReviewPage() {
 
   async function handleSave() {
     if (hasMissing || !draft || saving) return;
-    const sellerId = getStoredSellerId();
-    if (!sellerId) {
+    // Local-only check for a fast redirect if this browser has never been
+    // onboarded — the server derives the actual seller identity from the
+    // session cookie, never from anything the client sends.
+    if (!getStoredSellerId()) {
       router.replace("/");
       return;
     }
@@ -112,7 +114,6 @@ export default function ReviewPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sellerId,
           rawInputText: draft.rawInputText,
           items: items.map((it) => ({
             name: it.name,
