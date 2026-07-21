@@ -7,7 +7,7 @@ import { isDeliveryItem, naira, toNaira } from "@/lib/invoice";
 
 export type InvoiceCardStatus = "PENDING" | "PAID" | "FAILED";
 
-const statusStyles: Record<
+export const statusStyles: Record<
   InvoiceCardStatus,
   { badgeBg: string; fg: string; dot: string; label: string }
 > = {

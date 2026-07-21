@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/app-header";
 import { AppShell } from "@/components/app-shell";
 import { InvoiceCard, type InvoiceCardData } from "@/components/invoice-card";
+import { InvoiceTable } from "@/components/invoice-table";
 import { naira, toNaira } from "@/lib/invoice";
 import { prisma } from "@/lib/prisma";
 import { getSellerIdFromCookie } from "@/lib/seller-server";
@@ -37,7 +38,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <AppShell wide>
+    <AppShell wide sidebar>
       <div className="flex h-full w-full flex-col bg-bg">
         <AppHeader active="dashboard" sellerName={seller.name} />
 
@@ -95,15 +96,18 @@ export default async function DashboardPage() {
             No invoices yet
           </div>
         ) : (
-          <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 sm:items-start sm:gap-5">
-            {invoices.map((invoice) => (
-              <InvoiceCard
-                key={invoice.id}
-                invoice={invoice as InvoiceCardData}
-                sellerName={seller.name}
-              />
-            ))}
-          </div>
+          <>
+            <div className="flex flex-col gap-4 sm:hidden">
+              {invoices.map((invoice) => (
+                <InvoiceCard
+                  key={invoice.id}
+                  invoice={invoice as InvoiceCardData}
+                  sellerName={seller.name}
+                />
+              ))}
+            </div>
+            <InvoiceTable invoices={invoices as InvoiceCardData[]} sellerName={seller.name} />
+          </>
         )}
         </div>
       </div>

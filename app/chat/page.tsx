@@ -43,7 +43,7 @@ export default async function ChatPage() {
   });
 
   return (
-    <AppShell>
+    <AppShell sidebar>
       <div className="flex h-full w-full flex-col bg-bg">
         <AppHeader active="chat" sellerName={seller.name} />
 

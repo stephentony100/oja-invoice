@@ -12,7 +12,7 @@ export function AppHeader({
   const title = active === "chat" ? "Nado" : "Dashboard";
 
   return (
-    <header className="border-b border-line px-5 pt-3.5">
+    <header className="border-b border-line px-5 pt-3.5 sm:pb-3.5">
       <div className="mb-3.5 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-ink">
@@ -27,7 +27,7 @@ export function AppHeader({
         </div>
         <AvatarMenu sellerName={sellerName} />
       </div>
-      <nav className="flex items-center gap-[22px]">
+      <nav className="flex items-center gap-[22px] sm:hidden">
         <Link
           href="/chat"
           className={`flex flex-col gap-2 pb-2.5 text-[14px] ${
